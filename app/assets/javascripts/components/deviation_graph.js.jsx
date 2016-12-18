@@ -1,4 +1,4 @@
-var BaseGraph = React.createClass({
+var DeviationGraph = React.createClass({
   propTypes: {
     equation: React.PropTypes.string,
     coords: React.PropTypes.array,
@@ -18,13 +18,13 @@ var BaseGraph = React.createClass({
         <div>Evaluation: {this.state.equation}</div>
         <div>Points Count: {this.state.pointsCount}</div>
         <button onClick={this.getGraph}>Ololo</button>
-        <GoogleChart elementId='chart_div' rows={[this.state.coords]} />
+        <GoogleChart elementId='deviation_chart_div' rows={[this.state.coords]} />
       </div>
     );
   },
   getGraph: function(e) {
     self = this;
-    $.post('/api/base_graph', {equation: self.state.equation, points_count: self.state.pointsCount}, function(data) {
+    $.post('/api/deviation_graph', {equation: self.state.equation, points_count: self.state.pointsCount}, function(data) {
       self.setState(data);
     }, "json");
     return 'ok';
