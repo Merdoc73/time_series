@@ -4,5 +4,6 @@ Rails.application.routes.draw do
   namespace :api do
     resource :base_graph
     resource :deviation_graph
+    resource :anomaly_detector
   end
 end

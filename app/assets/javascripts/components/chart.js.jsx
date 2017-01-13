@@ -1,4 +1,4 @@
-class GoogleChart extends React.Component {
+class Chart extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -7,7 +7,7 @@ class GoogleChart extends React.Component {
     };
   };
   componentWillUpdate(nextProps, nextState) {
-    if (nextProps == this.props || nextProps.rows == [])
+    if (nextProps == this.props || nextProps.rows == [] || nextProps.rows[0] == null)
       return
     var options = {
       title: 'My Daily Activities'

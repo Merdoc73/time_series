@@ -2,8 +2,7 @@ class Api::DeviationGraphsController < Api::ApplicationController
   def create
     equation = params[:equation]
     deviation_equation = params[:deviation_equation]
-    deviation_equation = "(#{Random.new.rand(-10..10)}*#{['sin(x)', 'cos(x)', 'tan(x)', 'atan(x)', 'log(x)', "#{Random.new.rand(-10..10)}*x"].sample})"
-    p deviation_equation
+    deviation_equation ||= "(#{Random.new.rand(-10..10)}*#{['sin(x)', 'cos(x)', 'tan(x)', 'atan(x)', 'log(x)', "#{Random.new.rand(-10..10)}*x"].sample})"
     points_count = params[:points_count].to_i
     calculator = Dentaku::Calculator.new
     deviation_length = Random.new.rand(Range.new((points_count * 0.1).round, ((points_count * 0.5).round)))
@@ -15,8 +14,8 @@ class Api::DeviationGraphsController < Api::ApplicationController
         value = depends ? coord : x
         coord = calculator.evaluate(deviation_equation, x: value)
       end
-      [x, coord]
+      [x, coord.round(5)]
     end
-    render json: { coords: coords }
+    render json: { coords: coords, deviation_equation: deviation_equation, row: coords.map{|e| e[1].to_f} }
   end
 end

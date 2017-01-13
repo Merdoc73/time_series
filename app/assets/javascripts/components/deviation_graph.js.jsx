@@ -1,39 +1,48 @@
-var DeviationGraph = React.createClass({
-  propTypes: {
-    equation: React.PropTypes.string,
-    coords: React.PropTypes.array,
-    pointsCount: React.PropTypes.node
-  },
+class DeviationGraph extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      equation: props.equation,
+      pointsCount: props.pointsCount
+    };
+    this.getGraph = this.getGraph.bind(this);
+  };
 
-  getInitialState: function() {
-    google.charts.load('current', {'packages':['annotationchart']});
-    return this.props;
-  },
+  componentWillReceiveProps(nextProps) {
+    console.log(nextProps);
+    if (nextProps.equation == this.state.equation && nextProps.pointsCount == this.state.pointsCount)
+      return
+    this.setState({
+      equation: nextProps.equation,
+      pointsCount: nextProps.pointsCount
+    });
+  };
 
-  render: function() {
+  render() {
     return (
       <div>
-        equation: <input type='text' onChange={this.handleChangeEquation} />
-        points_count: <input type='text' onChange={this.handleChangePointsCount} />
-        <div>Evaluation: {this.state.equation}</div>
-        <div>Points Count: {this.state.pointsCount}</div>
-        <button onClick={this.getGraph}>Ololo</button>
-        <GoogleChart elementId='deviation_chart_div' rows={[this.state.coords]} />
+        <button onClick={this.getGraph}>Построить график с аномалией</button>
+        {this.state.deviation_equation &&
+            <div>Функция: {this.state.deviation_equation}</div>}
+        <Chart elementId='deviation_chart_div' rows={[this.state.coords]} />
+        {this.state.anomalies} <br/>
+        {this.state.all}
       </div>
     );
-  },
-  getGraph: function(e) {
+  };
+  getGraph(state, e) {
     self = this;
     $.post('/api/deviation_graph', {equation: self.state.equation, points_count: self.state.pointsCount}, function(data) {
       self.setState(data);
+      self.calcSlidingWindow(data.row.join());
     }, "json");
     return 'ok';
-  },
-  handleChangeEquation: function(e) {
-    this.setState({equation: e.target.value});
-  },
-
-  handleChangePointsCount: function(e) {
-    this.setState({pointsCount: e.target.value});
   }
-})
+  calcSlidingWindow(row) {
+    self = this;
+    $.post('/api/anomaly_detector', {type: 'sliding_window', row: row}, function(data) {
+      self.setState(data);
+    }, "json");
+    return 'ok';
+  }
+}

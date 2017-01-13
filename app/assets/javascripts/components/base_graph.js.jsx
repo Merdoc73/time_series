@@ -1,39 +1,38 @@
-var BaseGraph = React.createClass({
-  propTypes: {
-    equation: React.PropTypes.string,
-    coords: React.PropTypes.array,
-    pointsCount: React.PropTypes.node
-  },
-
-  getInitialState: function() {
+class BaseGraph extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      equation: props.equation,
+      pointsCount: props.pointsCount
+    };
+    this.getGraph = this.getGraph.bind(this);
     google.charts.load('current', {'packages':['annotationchart']});
-    return this.props;
-  },
+  };
 
-  render: function() {
+  componentWillReceiveProps(nextProps) {
+    console.log(nextProps);
+    this.setState({
+      equation: nextProps.equation,
+      pointsCount: nextProps.pointsCount
+    });
+  };
+
+
+  render() {
     return (
       <div>
-        equation: <input type='text' onChange={this.handleChangeEquation} />
-        points_count: <input type='text' onChange={this.handleChangePointsCount} />
-        <div>Evaluation: {this.state.equation}</div>
-        <div>Points Count: {this.state.pointsCount}</div>
-        <button onClick={this.getGraph}>Ololo</button>
-        <GoogleChart elementId='chart_div' rows={[this.state.coords]} />
+        <div>{this.state.equation}</div>
+        <button onClick={this.getGraph}>Построить график функции</button>
+        <Chart elementId='chart_div' rows={[this.state.coords]} />
       </div>
     );
-  },
-  getGraph: function(e) {
+  };
+  getGraph(e) {
+    console.log(this.state);
     self = this;
     $.post('/api/base_graph', {equation: self.state.equation, points_count: self.state.pointsCount}, function(data) {
       self.setState(data);
     }, "json");
     return 'ok';
-  },
-  handleChangeEquation: function(e) {
-    this.setState({equation: e.target.value});
-  },
-
-  handleChangePointsCount: function(e) {
-    this.setState({pointsCount: e.target.value});
   }
-})
+}
