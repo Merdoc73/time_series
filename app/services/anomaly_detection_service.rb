@@ -78,12 +78,11 @@ module AnomalyDetectionService
       pereodic_row = false
       return period = row_size * 0.2
     end
-
     avg_new_groups_size = new_groups[1..-2].map(&:size).sum.to_f / new_groups.size
     selected_groups = new_groups[1..-1].select.with_index do |e, index|
-      max_diff = avg_new_groups_size + avg_new_groups_size * 0.15
-      min_diff = avg_new_groups_size - avg_new_groups_size * 0.15
-      diff = e[0].first[0] - new_groups[index-1].last[0]
+      max_diff = avg_new_groups_size + avg_new_groups_size * 0.35
+      min_diff = avg_new_groups_size - avg_new_groups_size * 0.35
+      diff = e[0].first - new_groups[index].last[0]
       if diff.between? min_diff, max_diff
         true
       else
@@ -112,12 +111,12 @@ module AnomalyDetectionService
       row_diff = arr.last - arr.first
       row_trend = calc_trend(row_diff, arr.last)
       trend_arr << row_trend
-      p first_index
-      p trend_arr
+      # p first_index
+      # p trend_arr
       total_trend_hash = trend_arr.inject(Hash.new(0)) { |total, e| total[e] += 1; total}
       max_trend = total_trend_hash.max_by{|k,v| v}
       total_trend = max_trend[1] > arr.size * 0.5 ? max_trend[0] : :stability
-      p "total_trend: #{total_trend}"
+      # p "total_trend: #{total_trend}"
       trends.merge!({ first_index => total_trend })
 
       avg = (arr.sum.to_f / arr.size).round(5)
@@ -130,10 +129,11 @@ module AnomalyDetectionService
       dispersions.merge!({ first_index => dispersion })
     end
     min_trend = trends.group_by{|k,v| v}.map {|k,v| [k, v.size]}.min_by{|e| e[1]}
-    if min_trend.to_a.last <= trends.size * 0.1
+    trend_percent = 0.3
+    if min_trend.to_a.last <= trends.size * trend_percent
       p "trend: #{min_trend} is lower 10%"
     end
-    p min_trend
+    # p min_trend
     # p trends
     # p avgs
     # p deviations
