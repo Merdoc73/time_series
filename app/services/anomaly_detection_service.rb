@@ -19,10 +19,10 @@ module AnomalyDetectionService
     pereodic_row = nil
     period = nil
     row_size = row.size
-    avg = row.sum.to_f / row_size
+    avg = getRowAverage(row)
     indexed_row = row.map.with_index { |e, i| [i, e] }
     more_than_avg = indexed_row.select { |e| e[1].to_f > avg }
-    if more_than_avg.size > row_size.to_f * 0.6
+    if more_than_avg.size > row_size.to_f * 0.7
       pereodic_row = false
       return period = row_size * 0.2
     end
@@ -78,6 +78,7 @@ module AnomalyDetectionService
       pereodic_row = false
       return period = row_size * 0.2
     end
+
     avg_new_groups_size = new_groups[1..-2].map(&:size).sum.to_f / new_groups.size
     selected_groups = new_groups[1..-1].select.with_index do |e, index|
       max_diff = avg_new_groups_size + avg_new_groups_size * 0.35
@@ -89,12 +90,47 @@ module AnomalyDetectionService
         false
       end
     end
+    binding.pry
     if selected_groups.size > new_groups.size * 0.75
       pereodic_row = true
       return avg_new_groups_size
     else
       return period = row_size * 0.2
     end
+  end
+
+  def getRowAverage(row)
+    row_average = row.sum.to_f / row.size
+    row_max_diff = (row.max - row_average).abs
+    row_min_diff = (row_average - row.min).abs
+    proportions = row_max_diff / row_min_diff
+
+    if proportions < 0.9
+      row_clone = row.clone
+      target_size = row.size * 0.75
+      while target_size < row_clone.size
+        row_clone -= [row_clone.min]
+      end
+    elsif proportions > 1.1
+      row_clone = row.clone
+      target_size = (row.size * 0.75).to_i
+
+      while target_size < row_clone.size
+        row_clone -= [row_clone.max]
+      end
+    else
+      row_clone = row.clone
+      target_size = row.size * 0.75
+      while target_size < row_clone.size
+        row_clone -= [row_clone.min]
+      end
+
+      target_size = row_clone.size * 0.75
+      while target_size < row_clone.size
+        row_clone -= [row_clone.max]
+      end
+    end
+    row_clone.sum.to_f / row_clone.size
   end
 
   def calc_anomaly(row, period)
