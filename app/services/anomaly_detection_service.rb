@@ -106,25 +106,25 @@ module AnomalyDetectionService
 
     if proportions < 0.9
       row_clone = row.clone
-      target_size = row.size * 0.75
+      target_size = row.size * 0.7
       while target_size < row_clone.size
         row_clone -= [row_clone.min]
       end
     elsif proportions > 1.1
       row_clone = row.clone
-      target_size = (row.size * 0.75).to_i
+      target_size = (row.size * 0.7).to_i
 
       while target_size < row_clone.size
         row_clone -= [row_clone.max]
       end
     else
       row_clone = row.clone
-      target_size = row.size * 0.75
+      target_size = row.size * 0.7
       while target_size < row_clone.size
         row_clone -= [row_clone.min]
       end
 
-      target_size = row_clone.size * 0.75
+      target_size = row_clone.size * 0.7
       while target_size < row_clone.size
         row_clone -= [row_clone.max]
       end
@@ -139,6 +139,7 @@ module AnomalyDetectionService
     avgs_diff = {}
     dispersions = {}
     row.each_cons(period).with_index do |arr, first_index|
+      arr.map! {|item| item.abs}
       trend_arr = arr[1..-1].map.with_index do |e, index|
         diff = e - arr[index-1]
         calc_trend(diff, e)
@@ -176,7 +177,7 @@ module AnomalyDetectionService
     p dispersions
     anomaly = {}
     [:avgs, :deviations, :avgs_diff, :dispersions].each do |type|
-      avg = (eval(type.to_s).map{|k,v| v}.sum.to_f / eval(type.to_s).size).round(5)
+      avg = getRowAverage(eval(type.to_s).map{|k,v| v}).round(5)
       p "#{type.to_s} avg = #{avg}"
       anomaly[type] = eval(type.to_s).select{ |k,v| !v.between?(avg - avg * 0.25, avg + avg * 0.25)}
     end
