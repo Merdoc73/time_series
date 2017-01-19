@@ -36,18 +36,27 @@ class DeviationGraph extends React.Component {
         {this.state.sliding_window &&
             <div>
               Метод скользящего окна:<br/>
-              {this.state.sliding_window.anomalies} <br/>
-              {this.state.sliding_window.all}
+              аномалии: {this.state.sliding_window.anomalies} <br/>
+              все: {this.state.sliding_window.all}
             </div>
         }
+
+          {this.state.fuzzy &&
+          <div>
+              Поиск аномалий по лингвистическому ВР:<br/>
+              аномалии: {this.state.fuzzy} <br/>
+          </div>
+          }
       </div>
     );
   };
+
   getGraph(state, e) {
     self = this;
     $.post('/api/deviation_graph', {equation: self.state.equation, points_count: self.state.pointsCount, deviation_equation: self.state.manual_equation, deviation_length: self.state.manual_equation_length, noise: self.state.noise, blowout: self.state.blowout}, function(data) {
       self.setState(data);
       self.calcSlidingWindow(data.row.join());
+      self.calcFuzzyTimeseries(data.row.join())
     }, "json");
     return 'ok';
   };
@@ -55,6 +64,13 @@ class DeviationGraph extends React.Component {
     self = this;
     $.post('/api/anomaly_detector', {type: 'sliding_window', row: row}, function(data) {
       self.setState({sliding_window: data});
+    }, "json");
+    return 'ok';
+  };
+    calcFuzzyTimeseries(row) {
+    self = this;
+    $.post('/api/anomaly_detector', {type: 'fuzzy', row: row}, function(data) {
+      self.setState({fuzzy: data});
     }, "json");
     return 'ok';
   };

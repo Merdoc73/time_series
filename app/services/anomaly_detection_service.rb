@@ -3,8 +3,8 @@ module AnomalyDetectionService
   def perform(type, row)
     if type == 'sliding_window'
       sliding_window(row)
-    elsif type == 'other'
-      return
+    elsif type == 'fuzzy'
+      fuzzy(row)
     end
   end
 
@@ -159,5 +159,112 @@ module AnomalyDetectionService
     else
       :fall
     end
+  end
+
+  def fuzzy(row)
+    min = row.min
+    max = row.max
+    interval_length = (max - min) * 0.1
+    intervals_count = (2 * (max - min) / interval_length + 1).ceil
+
+    fuzzy_vars = getFuzzyVars(intervals_count, min, max)
+    linguistic_vars = getLinguisticVars(row, fuzzy_vars)
+
+    #нечеткие тенденции, которые встречаются реже 10%.
+    grouped_linguistic = linguistic_vars.group_by { |x| x.difference }
+    anomalies_indexes = []
+    grouped_linguistic.keys.each do |key|
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+        grouped_linguistic[key].each do |e|
+          e.anomaly = true
+          anomalies_indexes << e.index
+        end
+      end
+    end
+
+    #нечеткие переменные, которые встречаются реже 10%
+    grouped_linguistic = linguistic_vars.group_by { |x| x.val }
+    grouped_linguistic.keys.each do |key|
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+        grouped_linguistic[key].each do |e|
+          e.anomaly = true
+          anomalies_indexes << e.index
+        end
+      end
+    end
+
+    anomalies_indexes = anomalies_indexes.uniq.sort
+  end
+
+  def getFuzzyVars(intervals_count, min, max)
+    interval_length = (max - min) / intervals_count
+    fuzzy_vars = []
+
+    for i in 0..intervals_count-1
+      interval_begin = min + interval_length * i
+      interval_middle = interval_begin + interval_length / 2
+      interval_end = interval_begin + interval_length
+      name = i
+      fuzzy = FuzzyVar.new(interval_begin, interval_middle, interval_end, name)
+      fuzzy_vars << fuzzy
+    end
+    fuzzy_vars
+  end
+
+  def getLinguisticVars(row, fuzzy_vars)
+    linguistic_vars = []
+    row.each do |item|
+      closest_fuzzy_var = fuzzy_vars.min_by { |x| (x.interval_middle > item ? x.interval_middle - item : item - x.interval_middle).abs }
+      linguistic_vars << LinguisticVar.new(closest_fuzzy_var)
+    end
+
+    for i in 0..(linguistic_vars.size-2)
+      current_val = linguistic_vars[i].val.name
+      next_val = linguistic_vars[i + 1].val.name
+      difference = next_val - current_val
+      if difference == 0
+        trend = :stability
+      elsif difference > 0
+        trend = :growth
+      else
+        trend = :fall
+      end
+      linguistic_vars[i].trend = trend
+      linguistic_vars[i].difference = difference
+      linguistic_vars[i].index = i
+    end
+    linguistic_vars[linguistic_vars.size - 1].difference = linguistic_vars[linguistic_vars.size - 2].difference
+    linguistic_vars[linguistic_vars.size - 1].trend = linguistic_vars[linguistic_vars.size - 2].trend
+    linguistic_vars[linguistic_vars.size - 1].index = linguistic_vars.size - 1
+
+    linguistic_vars
+  end
+
+  class FuzzyVar
+    def initialize(interval_begin, interval_middle, interval_end, name)
+      @interval_begin = interval_begin
+      @interval_middle = interval_middle
+      @interval_end = interval_end
+      @name = name
+    end
+    attr_reader :interval_begin
+    attr_reader :interval_middle
+    attr_reader :interval_end
+    attr_reader :name
+  end
+
+  class LinguisticVar
+    @difference = 0
+    @trend = :stability
+    @index = 0
+    @anomaly = false
+    def initialize(val)
+      @val = val
+    end
+    attr_reader :val
+    attr_accessor :trend
+    attr_accessor :difference
+    attr_accessor :index
+    attr_accessor :anomaly
   end
 end
