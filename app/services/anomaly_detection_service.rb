@@ -3,8 +3,8 @@ module AnomalyDetectionService
   def perform(type, row)
     if type == 'sliding_window'
       sliding_window(row)
-    elsif type == 'other'
-      return
+    elsif type == 'fuzzy'
+      fuzzy(row)
     end
   end
 
@@ -19,10 +19,10 @@ module AnomalyDetectionService
     pereodic_row = nil
     period = nil
     row_size = row.size
-    avg = row.sum.to_f / row_size
+    avg = getRowAverage(row)
     indexed_row = row.map.with_index { |e, i| [i, e] }
     more_than_avg = indexed_row.select { |e| e[1].to_f > avg }
-    if more_than_avg.size > row_size.to_f * 0.6
+    if more_than_avg.size > row_size.to_f * 0.7
       pereodic_row = false
       return period = row_size * 0.2
     end
@@ -78,6 +78,7 @@ module AnomalyDetectionService
       pereodic_row = false
       return period = row_size * 0.2
     end
+
     avg_new_groups_size = new_groups[1..-2].map(&:size).sum.to_f / new_groups.size
     selected_groups = new_groups[1..-1].select.with_index do |e, index|
       max_diff = avg_new_groups_size + avg_new_groups_size * 0.35
@@ -89,12 +90,46 @@ module AnomalyDetectionService
         false
       end
     end
-    if selected_groups.size > new_groups.size * 0.75
+    if selected_groups.size >= (new_groups.size * 0.75).to_i
       pereodic_row = true
       return avg_new_groups_size
     else
       return period = row_size * 0.2
     end
+  end
+
+  def getRowAverage(row)
+    row_average = row.sum.to_f / row.size
+    row_max_diff = (row.max - row_average).abs
+    row_min_diff = (row_average - row.min).abs
+    proportions = row_max_diff / row_min_diff
+
+    if proportions < 0.9
+      row_clone = row.clone
+      target_size = row.size * 0.7
+      while target_size < row_clone.size
+        row_clone -= [row_clone.min]
+      end
+    elsif proportions > 1.1
+      row_clone = row.clone
+      target_size = (row.size * 0.7).to_i
+
+      while target_size < row_clone.size
+        row_clone -= [row_clone.max]
+      end
+    else
+      row_clone = row.clone
+      target_size = row.size * 0.7
+      while target_size < row_clone.size
+        row_clone -= [row_clone.min]
+      end
+
+      target_size = row_clone.size * 0.7
+      while target_size < row_clone.size
+        row_clone -= [row_clone.max]
+      end
+    end
+    row_clone.sum.to_f / row_clone.size
   end
 
   def calc_anomaly(row, period)
@@ -104,6 +139,7 @@ module AnomalyDetectionService
     avgs_diff = {}
     dispersions = {}
     row.each_cons(period).with_index do |arr, first_index|
+      arr.map! {|item| item.abs}
       trend_arr = arr[1..-1].map.with_index do |e, index|
         diff = e - arr[index-1]
         calc_trend(diff, e)
@@ -141,7 +177,7 @@ module AnomalyDetectionService
     p dispersions
     anomaly = {}
     [:avgs, :deviations, :avgs_diff, :dispersions].each do |type|
-      avg = (eval(type.to_s).map{|k,v| v}.sum.to_f / eval(type.to_s).size).round(5)
+      avg = getRowAverage(eval(type.to_s).map{|k,v| v}).round(5)
       p "#{type.to_s} avg = #{avg}"
       anomaly[type] = eval(type.to_s).select{ |k,v| !v.between?(avg - avg * 0.25, avg + avg * 0.25)}
     end
@@ -159,5 +195,112 @@ module AnomalyDetectionService
     else
       :fall
     end
+  end
+
+  def fuzzy(row)
+    min = row.min
+    max = row.max
+    interval_length = (max - min) * 0.1
+    intervals_count = (2 * (max - min) / interval_length + 1).ceil
+
+    fuzzy_vars = getFuzzyVars(intervals_count, min, max)
+    linguistic_vars = getLinguisticVars(row, fuzzy_vars)
+
+    #нечеткие тенденции, которые встречаются реже 10%.
+    grouped_linguistic = linguistic_vars.group_by { |x| x.difference }
+    anomalies_indexes = []
+    grouped_linguistic.keys.each do |key|
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+        grouped_linguistic[key].each do |e|
+          e.anomaly = true
+          anomalies_indexes << e.index
+        end
+      end
+    end
+
+    #нечеткие переменные, которые встречаются реже 10%
+    grouped_linguistic = linguistic_vars.group_by { |x| x.val }
+    grouped_linguistic.keys.each do |key|
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+        grouped_linguistic[key].each do |e|
+          e.anomaly = true
+          anomalies_indexes << e.index
+        end
+      end
+    end
+
+    anomalies_indexes = anomalies_indexes.uniq.sort
+  end
+
+  def getFuzzyVars(intervals_count, min, max)
+    interval_length = (max - min) / intervals_count
+    fuzzy_vars = []
+
+    for i in 0..intervals_count-1
+      interval_begin = min + interval_length * i
+      interval_middle = interval_begin + interval_length / 2
+      interval_end = interval_begin + interval_length
+      name = i
+      fuzzy = FuzzyVar.new(interval_begin, interval_middle, interval_end, name)
+      fuzzy_vars << fuzzy
+    end
+    fuzzy_vars
+  end
+
+  def getLinguisticVars(row, fuzzy_vars)
+    linguistic_vars = []
+    row.each do |item|
+      closest_fuzzy_var = fuzzy_vars.min_by { |x| (x.interval_middle > item ? x.interval_middle - item : item - x.interval_middle).abs }
+      linguistic_vars << LinguisticVar.new(closest_fuzzy_var)
+    end
+
+    for i in 0..(linguistic_vars.size-2)
+      current_val = linguistic_vars[i].val.name
+      next_val = linguistic_vars[i + 1].val.name
+      difference = next_val - current_val
+      if difference == 0
+        trend = :stability
+      elsif difference > 0
+        trend = :growth
+      else
+        trend = :fall
+      end
+      linguistic_vars[i].trend = trend
+      linguistic_vars[i].difference = difference
+      linguistic_vars[i].index = i
+    end
+    linguistic_vars[linguistic_vars.size - 1].difference = linguistic_vars[linguistic_vars.size - 2].difference
+    linguistic_vars[linguistic_vars.size - 1].trend = linguistic_vars[linguistic_vars.size - 2].trend
+    linguistic_vars[linguistic_vars.size - 1].index = linguistic_vars.size - 1
+
+    linguistic_vars
+  end
+
+  class FuzzyVar
+    def initialize(interval_begin, interval_middle, interval_end, name)
+      @interval_begin = interval_begin
+      @interval_middle = interval_middle
+      @interval_end = interval_end
+      @name = name
+    end
+    attr_reader :interval_begin
+    attr_reader :interval_middle
+    attr_reader :interval_end
+    attr_reader :name
+  end
+
+  class LinguisticVar
+    @difference = 0
+    @trend = :stability
+    @index = 0
+    @anomaly = false
+    def initialize(val)
+      @val = val
+    end
+    attr_reader :val
+    attr_accessor :trend
+    attr_accessor :difference
+    attr_accessor :index
+    attr_accessor :anomaly
   end
 end

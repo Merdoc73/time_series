@@ -10,7 +10,6 @@ class Chart extends React.Component {
     if (nextProps == this.props || nextProps.rows == [] || nextProps.rows[0] == null)
       return
     var options = {
-      title: 'My Daily Activities'
     };
     var chart = new google.visualization.LineChart(document.getElementById(nextProps.elementId));
     var data = new google.visualization.DataTable();

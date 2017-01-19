@@ -12,10 +12,10 @@ var Base = React.createClass({
   render: function() {
     return (
       <div>
-        equation: <input type='text' onChange={this.handleChangeEquation} />
-        points_count: <input type='text' onChange={this.handleChangePointsCount} />
-        <div>Evaluation: {this.state.equation}</div>
-        <div>Points Count: {this.state.pointsCount}</div>
+        График: <input type='text' onChange={this.handleChangeEquation} /> <br/>
+        Количество точек: <input type='text' onChange={this.handleChangePointsCount} />
+        <div>График: {this.state.equation}</div>
+        <div>Количество точек: {this.state.pointsCount}</div>
         <BaseGraph equation={this.state.equation} pointsCount={this.state.pointsCount}/>
         <DeviationGraph equation={this.state.equation} pointsCount={this.state.pointsCount}/>
       </div>
