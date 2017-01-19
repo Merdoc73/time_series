@@ -90,8 +90,7 @@ module AnomalyDetectionService
         false
       end
     end
-    binding.pry
-    if selected_groups.size > new_groups.size * 0.75
+    if selected_groups.size >= (new_groups.size * 0.75).to_i
       pereodic_row = true
       return avg_new_groups_size
     else
