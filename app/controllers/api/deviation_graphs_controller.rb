@@ -24,7 +24,7 @@ class Api::DeviationGraphsController < Api::ApplicationController
       x_val = x * 0.3
       coord = calculator.evaluate(equation, x: x_val)
       if (start_point..start_point+deviation_length-1).to_a.include? x
-        coord = calculator.evaluate(deviation_equation, x: x_val - start_point)
+        coord = calculator.evaluate(deviation_equation, x: (x - start_point) * 0.3)
       end
       actual_noise = Random.new.rand(-noise..noise)
       coord = coord * (1 + actual_noise)
