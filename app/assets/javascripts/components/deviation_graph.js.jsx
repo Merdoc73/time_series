@@ -33,7 +33,7 @@ class DeviationGraph extends React.Component {
         Количество выбросов: <input type='text' onChange={this.handleChangeBlowout} />
         {this.state.deviation_equation &&
             <div>Функция: {this.state.deviation_equation}</div>}
-        <Chart elementId='deviation_chart_div' rows={[this.state.coords]} />
+        <Chart elementId='deviation_chart_div' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
         {this.state.sliding_window &&
             <div>
               Метод скользящего окна:<br/>
