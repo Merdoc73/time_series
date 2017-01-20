@@ -26,6 +26,8 @@ gem 'dentaku'
 gem 'react-rails'
 gem 'slim'
 gem 'uglifier'
+gem 'bootstrap-sass'
+gem 'sass-rails'
 
 
 group :development, :test do

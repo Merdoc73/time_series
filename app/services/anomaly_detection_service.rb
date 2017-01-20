@@ -183,6 +183,9 @@ module AnomalyDetectionService
     end
     all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(&:&)
     p all
+    if all.size >= 0.4 * (row.size - period)
+      all = []
+    end
     return { anomalies: all.map{|e| "#{e}-#{e+period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_s}
   end
@@ -200,7 +203,7 @@ module AnomalyDetectionService
   def fuzzy(row)
     min = row.min
     max = row.max
-    interval_length = (max - min) * 0.1
+    interval_length = (max - min) * 0.2
     intervals_count = (2 * (max - min) / interval_length + 1).ceil
 
     fuzzy_vars = getFuzzyVars(intervals_count, min, max)
@@ -210,18 +213,48 @@ module AnomalyDetectionService
     grouped_linguistic = linguistic_vars.group_by { |x| x.difference }
     anomalies_indexes = []
     grouped_linguistic.keys.each do |key|
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
         grouped_linguistic[key].each do |e|
           e.anomaly = true
           anomalies_indexes << e.index
         end
       end
+    end
+
+    keys = ('A'..'Z').to_a
+    trend_table = []
+    i = 0
+    grouped_linguistic.keys.each do |key|
+      elements = []
+      elements << keys[i]
+
+      if grouped_linguistic[key].first.trend == :growth
+        elements << 'Рост'
+      elsif grouped_linguistic[key].first.trend == :fall
+        elements << 'Падение'
+      else
+        elements << 'Стабильность'
+      end
+
+      elements << 'R' + key.abs.to_s
+      elements << grouped_linguistic[key].size
+      elements << grouped_linguistic[key].size.to_s + '/' + linguistic_vars.size.to_s
+
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+        elements << grouped_linguistic[key].map {|x| x.index } .join(', ')
+      else
+        elements << ''
+      end
+
+      trend_table << elements
+
+      i += 1
     end
 
     #нечеткие переменные, которые встречаются реже 10%
     grouped_linguistic = linguistic_vars.group_by { |x| x.val }
     grouped_linguistic.keys.each do |key|
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
         grouped_linguistic[key].each do |e|
           e.anomaly = true
           anomalies_indexes << e.index
@@ -229,7 +262,32 @@ module AnomalyDetectionService
       end
     end
 
+    i = 0
+    var_table = []
+    grouped_linguistic.keys.each do |key|
+      elements = []
+      elements << keys[i]
+
+      elements << 'R' + i.to_s
+      elements << grouped_linguistic[key].size
+      elements << grouped_linguistic[key].size.to_s + '/' + linguistic_vars.size.to_s
+
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+        elements << grouped_linguistic[key].map {|x| x.index } .join(', ')
+      else
+        elements << ''
+      end
+
+      var_table << elements
+
+      i += 1
+    end
+
     anomalies_indexes = anomalies_indexes.uniq.sort
+
+    {anomalies_indexes: anomalies_indexes,
+     trend_table: trend_table,
+     var_table: var_table}
   end
 
   def getFuzzyVars(intervals_count, min, max)

@@ -1,0 +1,19 @@
+@import "bootstrap-sprockets";
+@import "bootstrap";
+
+  input  {
+    margin-bottom: 10px;
+    margin-top: 10px;
+  }
+  div {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  th, td {
+    padding: 10px;
+  }
+
+  #chart_div, .no-padding, .no-padding div, #deviation_chart_div, #deviation_chart_div div {
+    padding: 0;
+  }
