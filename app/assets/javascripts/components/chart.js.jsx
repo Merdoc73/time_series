@@ -8,7 +8,7 @@ class Chart extends React.Component {
     };
   };
   componentWillUpdate(nextProps, nextState) {
-    if (nextProps == this.props || nextProps.rows == [] || nextProps.rows[0] == null)
+    if (nextProps.rows == [] || nextProps.rows[0] == undefined )
       return
     var options = {};
     coords = nextProps.rows[0].map(function(array) {
@@ -36,7 +36,7 @@ class Chart extends React.Component {
         tickColor: '#666',
         tickLength: 3,
         title: {
-          text: 'X Axis Title'
+          text: 'X'
         },
 
       },
@@ -50,7 +50,7 @@ class Chart extends React.Component {
         tickLength: 3,
         gridLineColor: '#ddd',
         title: {
-          text: 'Y Axis Title',
+          text: 'Y',
           rotation: 0,
           margin: 50,
         }
@@ -82,7 +82,7 @@ class Chart extends React.Component {
   };
   render() {
     return (
-      <div >
+      <div>
         <div id={this.props.elementId}></div>
       </div >
     );
