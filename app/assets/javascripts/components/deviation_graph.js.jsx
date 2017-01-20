@@ -43,8 +43,23 @@ class DeviationGraph extends React.Component {
 
           {this.state.fuzzy &&
           <div>
-              Поиск аномалий по лингвистическому ВР:<br/>
-              аномалии: {this.state.fuzzy} <br/>
+              <h3>Поиск аномалий по лингвистическому ВР:</h3><br/>
+              аномалии:
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Номер элемента</th>
+                        </tr>
+                        {this.state.fuzzy.map(function(element, index){
+                            return (
+                                <tr key={index}>
+                                    <td key={index}>{element}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+              <br/>
           </div>
           }
       </div>
