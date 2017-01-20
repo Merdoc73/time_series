@@ -24,6 +24,7 @@ class DeviationGraph extends React.Component {
 
   render() {
     return (
+
       <div>
         <button onClick={this.getGraph}>Построить график с аномалией</button><br/>
         Функция аномалии: <input type='text' onChange={this.handleChangeManualEquation} /><br/>
@@ -43,17 +44,51 @@ class DeviationGraph extends React.Component {
 
           {this.state.fuzzy &&
           <div>
-              <h3>Поиск аномалий по лингвистическому ВР:</h3><br/>
-              аномалии:
-                <table>
+              <h3>Поиск аномалий по лингвистическому ВР:</h3>
+              По символам ЛНВР:
+              <table className="table-bordered table-hover">
+                  <tbody>
+                  <tr>
+                      <th>Символы алфавита S(j)</th>
+                      <th>Термы нечетких множеств</th>
+                      <th>Количетво появления символов в ЛНВР</th>
+                      <th>Частотный индекс символа</th>
+                      <th>Моменты времени для аномальных символов</th>
+                  </tr>
+                  {this.state.fuzzy.var_table.map(function(element, index){
+                      return (
+                          <tr key={index}>
+                              <td>{element[0]}</td>
+                              <td>{element[1]}</td>
+                              <td>{element[2]}</td>
+                              <td>{element[3]}</td>
+                              <td>{element[4]}</td>
+                          </tr>
+                      );
+                  })}
+                  </tbody>
+              </table>
+              <br/>
+              По нечеткой тенденции:
+                <table className="table-bordered table-hover">
                     <tbody>
                         <tr>
-                            <th>Номер элемента</th>
+                            <th>Символы алфавита S(j)</th>
+                            <th>Символы Типов НЭТ</th>
+                            <th>Символы Интенсивности НЭТ</th>
+                            <th>Количество символов НЭТ</th>
+                            <th>Частотный индекс символа</th>
+                            <th>Моменты времени для аномальных символов</th>
                         </tr>
-                        {this.state.fuzzy.map(function(element, index){
+                        {this.state.fuzzy.trend_table.map(function(element, index){
                             return (
                                 <tr key={index}>
-                                    <td key={index}>{element}</td>
+                                    <td>{element[0]}</td>
+                                    <td>{element[1]}</td>
+                                    <td>{element[2]}</td>
+                                    <td>{element[3]}</td>
+                                    <td>{element[4]}</td>
+                                    <td>{element[5]}</td>
                                 </tr>
                             );
                         })}

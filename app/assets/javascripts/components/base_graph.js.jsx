@@ -23,7 +23,7 @@ class BaseGraph extends React.Component {
       <div>
         <div>{this.state.equation}</div>
         <button onClick={this.getGraph}>Построить график функции</button>
-        <Chart elementId='chart_div' rows={[this.state.coords]} />
+        <Chart  elementId='chart_div' rows={[this.state.coords]} />
       </div>
     );
   };
