@@ -183,6 +183,9 @@ module AnomalyDetectionService
     end
     all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(&:&)
     p all
+    if all.size >= 0.4 * (row.size - period)
+      all = []
+    end
     return { anomalies: all.map{|e| "#{e}-#{e+period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_s}
   end
