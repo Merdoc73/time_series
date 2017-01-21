@@ -21,7 +21,9 @@ module AnomalyDetectionService
     row_size = row.size
     avg = getRowAverage(row)
     indexed_row = row.map.with_index { |e, i| [i, e] }
-    more_than_avg = indexed_row.select { |e| e[1].to_f > avg }
+    p avg
+    p row
+    more_than_avg = indexed_row.select { |e| (e[1] || 0).to_f > avg }
     if more_than_avg.size > row_size.to_f * 0.7
       pereodic_row = false
       return period = row_size * 0.2
@@ -99,34 +101,35 @@ module AnomalyDetectionService
   end
 
   def getRowAverage(row)
+    row = row.map{|e| e.round(4)}
     row_average = row.sum.to_f / row.size
     row_max_diff = (row.max - row_average).abs
     row_min_diff = (row_average - row.min).abs
-    proportions = row_max_diff / row_min_diff
+    proportions = row_max_diff.to_f / row_min_diff
 
     if proportions < 0.9
-      row_clone = row.clone
+      row_clone = row
       target_size = row.size * 0.7
       while target_size < row_clone.size
-        row_clone -= [row_clone.min]
+        row_clone.delete_at(row_clone.index(row_clone.min))
       end
     elsif proportions > 1.1
       row_clone = row.clone
       target_size = (row.size * 0.7).to_i
 
       while target_size < row_clone.size
-        row_clone -= [row_clone.max]
+        row_clone.delete_at(row_clone.index(row_clone.min))
       end
     else
-      row_clone = row.clone
+      row_clone = row
       target_size = row.size * 0.7
       while target_size < row_clone.size
-        row_clone -= [row_clone.min]
+        row_clone.delete_at(row_clone.index(row_clone.min))
       end
 
       target_size = row_clone.size * 0.7
       while target_size < row_clone.size
-        row_clone -= [row_clone.max]
+        row_clone.delete_at(row_clone.index(row_clone.max))
       end
     end
     row_clone.sum.to_f / row_clone.size
@@ -174,9 +177,15 @@ module AnomalyDetectionService
     p dispersions
     anomaly = {}
     [:avgs, :deviations, :avgs_diff, :dispersions].each do |type|
-      avg = getRowAverage(eval(type.to_s).map{|k,v| v}).round(5)
+      avg = getRowAverage(eval(type.to_s).map{|k,v| v.to_f.round(3)}).round(4)
       p "#{type.to_s} avg = #{avg}"
-      anomaly[type] = eval(type.to_s).select{ |k,v| !v.between?(avg - avg * 0.25, avg + avg * 0.25)}
+      p "#{eval(type.to_s)}"
+      anomaly[type] = eval(type.to_s).select{ |k,v| !v.round(3).between?(avg - avg * 0.25, avg + avg * 0.25)}
+    end
+    if min_trend.to_a.last <= trends.size * trend_percent
+      p "trend: #{min_trend} is lower 10%"
+      anomaly[:trends] = trends.select{|e| e[0] != :trend}.select{|k,v| v == min_trend.to_a.first}
+      p anomaly[:trends]
     end
     if min_trend.to_a.last <= trends.size * trend_percent
       p "trend: #{min_trend} is lower 10%"
@@ -188,7 +197,7 @@ module AnomalyDetectionService
     if all.size >= 0.4 * (row.size - period)
       all = []
     end
-    var_table = (0..row.size).to_a.map.with_index do |e, index|
+    var_table = (0..row.size-period).to_a.map.with_index do |e, index|
        ["#{e}-#{e+period}",
         trends[index],
         avgs[index],
