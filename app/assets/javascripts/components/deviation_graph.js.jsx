@@ -44,6 +44,7 @@ class DeviationGraph extends React.Component {
 
           {this.state.fuzzy &&
           <div>
+              <Chart elementId='deviation_chart_div_fuzzy' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
               <h3>Поиск аномалий по лингвистическому ВР:</h3>
               По символам ЛНВР:
               <table className="table-bordered table-hover">
