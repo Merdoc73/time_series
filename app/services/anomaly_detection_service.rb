@@ -169,9 +169,6 @@ module AnomalyDetectionService
     end
     min_trend = trends.group_by{|k,v| v}.map {|k,v| [k, v.size]}.min_by{|e| e[1]}
     trend_percent = 0.3
-    if min_trend.to_a.last <= trends.size * trend_percent
-      p "trend: #{min_trend} is lower 10%"
-    end
     # p min_trend
     # p trends
     # p avgs
@@ -190,6 +187,11 @@ module AnomalyDetectionService
       anomaly[:trends] = trends.select{|e| e[0] != :trend}.select{|k,v| v == min_trend.to_a.first}
       p anomaly[:trends]
     end
+    if min_trend.to_a.last <= trends.size * trend_percent
+      p "trend: #{min_trend} is lower 10%"
+      anomaly[:trends] = trends.select{|k,v| v == min_trend.to_a.first}
+      p anomaly[:trends]
+    end
     all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(&:&)
     p all
     if all.size >= 0.4 * (row.size - period)
@@ -206,7 +208,8 @@ module AnomalyDetectionService
        ]#.zip(trends, avgs, deviations, avgs_diff, dispersions)
     end
     return { anomalies: all.map{|e| "#{e}-#{e+period}"}.join(';'),
-             all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_s}
+             all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_json,
+             var_table: var_table}
   end
 
   def calc_trend(diff, element)

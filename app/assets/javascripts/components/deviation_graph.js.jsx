@@ -24,7 +24,6 @@ class DeviationGraph extends React.Component {
 
   render() {
     return (
-
       <div>
         <button onClick={this.getGraph}>Построить график с аномалией</button><br/>
         Функция аномалии: <input type='text' onChange={this.handleChangeManualEquation} /><br/>
@@ -33,12 +32,35 @@ class DeviationGraph extends React.Component {
         Количество выбросов: <input type='text' onChange={this.handleChangeBlowout} />
         {this.state.deviation_equation &&
             <div>Функция: {this.state.deviation_equation}</div>}
-        <Chart elementId='deviation_chart_div' rows={[this.state.coords]} />
+        <Chart elementId='deviation_chart_div' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
         {this.state.sliding_window &&
             <div>
-              Метод скользящего окна:<br/>
-              аномалии: {this.state.sliding_window.anomalies} <br/>
-              все: {this.state.sliding_window.all}
+              <h3>Метод скользящего окна:</h3>
+	      <table className="table table-bordered table-hover">
+                  <tbody>
+                  <tr>
+                      <th>Окно</th>
+                      <th>Тенденция</th>
+                      <th>Среднее значение</th>
+                      <th>Максимальное по модулю отклонение на отрезке </th>
+                      <th>Средняя разница в значениях между соседними точками</th>
+                      <th>Дисперсия</th>
+                  </tr>
+                  {this.state.sliding_window.var_table.map(function(element, index){
+                      return (
+                          <tr key={index} className={element[6] ? 'danger' : ''}>
+                              <td>{element[0]}</td>
+                              <td>{element[1]}</td>
+                              <td>{element[2]}</td>
+                              <td>{element[3]}</td>
+                              <td>{element[4]}</td>
+                              <td>{element[5]}</td>
+                          </tr>
+                      );
+                  })}
+                  </tbody>
+              </table>
+
             </div>
         }
 
