@@ -235,7 +235,7 @@ module AnomalyDetectionService
     grouped_linguistic = linguistic_vars.group_by { |x| x.difference }
     anomalies_indexes = []
     grouped_linguistic.keys.each do |key|
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
         grouped_linguistic[key].each do |e|
           e.anomaly = true
           anomalies_indexes << e.index
@@ -262,7 +262,7 @@ module AnomalyDetectionService
       elements << grouped_linguistic[key].size
       elements << grouped_linguistic[key].size.to_s + '/' + linguistic_vars.size.to_s
 
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
         elements << grouped_linguistic[key].map {|x| x.index } .join(', ')
       else
         elements << ''
@@ -276,7 +276,7 @@ module AnomalyDetectionService
     #нечеткие переменные, которые встречаются реже 10%
     grouped_linguistic = linguistic_vars.group_by { |x| x.val }
     grouped_linguistic.keys.each do |key|
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
         grouped_linguistic[key].each do |e|
           e.anomaly = true
           anomalies_indexes << e.index
@@ -294,7 +294,7 @@ module AnomalyDetectionService
       elements << grouped_linguistic[key].size
       elements << grouped_linguistic[key].size.to_s + '/' + linguistic_vars.size.to_s
 
-      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.1)
+      if grouped_linguistic[key].size <= (linguistic_vars.size * 0.05)
         elements << grouped_linguistic[key].map {|x| x.index } .join(', ')
       else
         elements << ''
