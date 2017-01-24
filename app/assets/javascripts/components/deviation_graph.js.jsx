@@ -10,6 +10,8 @@ class DeviationGraph extends React.Component {
     this.handleChangeManualEquationLength = this.handleChangeManualEquationLength.bind(this);
     this.handleChangeNoise = this.handleChangeNoise.bind(this);
     this.handleChangeBlowout = this.handleChangeBlowout.bind(this);
+    this.handleChangeWindowSize = this.handleChangeWindowSize.bind(this);
+    this.handleChangeFuzzySize = this.handleChangeFuzzySize.bind(this);
       $( document ).ready(function() {
           document.getElementById("defaultOpen").click();
           document.getElementById("defaultOpen").className += " active";
@@ -33,7 +35,9 @@ class DeviationGraph extends React.Component {
         Функция аномалии: <input type='text' onChange={this.handleChangeManualEquation} /><br/>
         Длина функции аномалии: <input type='text' onChange={this.handleChangeManualEquationLength} /><br/>
         Шум: <input type='text' onChange={this.handleChangeNoise} /><br/>
-        Количество выбросов: <input type='text' onChange={this.handleChangeBlowout} />
+        Количество выбросов: <input type='text' onChange={this.handleChangeBlowout} /><br/>
+          Размер окна: <input type='text' onChange={this.handleChangeWindowSize} /><br/>
+          Количество нечетких переменных: <input type='text' onChange={this.handleChangeFuzzySize} />
         {this.state.deviation_equation &&
             <div>Функция: {this.state.deviation_equation}</div>}
 
@@ -162,7 +166,7 @@ class DeviationGraph extends React.Component {
   };
   calcSlidingWindow(row) {
     self = this;
-    $.post('/api/anomaly_detector', {type: 'sliding_window', row: row}, function(data) {
+    $.post('/api/anomaly_detector', {type: 'sliding_window', row: row, size: self.state.windowSize}, function(data) {
       self.setState({sliding_window: data});
       self.setState({sliding_window: data});
     }, "json");
@@ -170,7 +174,7 @@ class DeviationGraph extends React.Component {
   };
     calcFuzzyTimeseries(row) {
     self = this;
-    $.post('/api/anomaly_detector', {type: 'fuzzy', row: row}, function(data) {
+    $.post('/api/anomaly_detector', {type: 'fuzzy', row: row, size: self.state.fuzzySize}, function(data) {
       self.setState({fuzzy: data});
       self.setState({fuzzy: data});
     }, "json");
@@ -191,5 +195,13 @@ class DeviationGraph extends React.Component {
 
     handleChangeBlowout(e) {
         this.setState({blowout: e.target.value});
+    }
+
+    handleChangeWindowSize(e) {
+        this.setState({windowSize: e.target.value});
+    }
+
+    handleChangeFuzzySize(e) {
+        this.setState({fuzzySize: e.target.value});
     }
 }

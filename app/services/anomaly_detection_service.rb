@@ -1,18 +1,22 @@
 module AnomalyDetectionService
   extend self
-  def perform(type, row)
+  def perform(type, row, size)
     if type == 'sliding_window'
-      sliding_window(row)
+      sliding_window(row, size)
     elsif type == 'fuzzy'
-      fuzzy(row)
+      fuzzy(row, size)
     end
   end
 
   private
 
-  def sliding_window(row)
+  def sliding_window(row, size)
     period = calc_period(row).round(0)
-    calc_anomaly(row, period)
+    if size.nil? or size.empty?
+      calc_anomaly(row, period)
+    else
+      calc_anomaly(row, size.to_i)
+    end
   end
 
   def calc_period(row)
@@ -222,11 +226,15 @@ module AnomalyDetectionService
     end
   end
 
-  def fuzzy(row)
+  def fuzzy(row, size)
     min = row.min
     max = row.max
     interval_length = (max - min) * 0.2
-    intervals_count = (2 * (max - min) / interval_length + 1).ceil
+    if size.nil? or size.empty?
+      intervals_count = (2 * (max - min) / interval_length + 1).ceil
+    else
+      intervals_count = size.to_i
+    end
 
     fuzzy_vars = getFuzzyVars(intervals_count, min, max)
     linguistic_vars = getLinguisticVars(row, fuzzy_vars)
