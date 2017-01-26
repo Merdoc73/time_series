@@ -28,6 +28,7 @@ gem 'slim'
 gem 'uglifier'
 gem 'bootstrap-sass'
 gem 'sass-rails'
+gem 'lodash-rails'
 
 
 group :development, :test do

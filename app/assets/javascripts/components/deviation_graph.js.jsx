@@ -28,6 +28,13 @@ class DeviationGraph extends React.Component {
     });
   };
 
+  prepareCustomCoords(string) {
+    coords = string.split(',').map(parseFloat);
+    coords = _.zip(_.range(coords.length), coords)
+    this.setState({coords: coords})
+    console.log(coords)
+  };
+
   render() {
     return (
       <div>
@@ -36,8 +43,14 @@ class DeviationGraph extends React.Component {
         Длина функции аномалии: <input type='text' onChange={this.handleChangeManualEquationLength} /><br/>
         Шум: <input type='text' onChange={this.handleChangeNoise} /><br/>
         Количество выбросов: <input type='text' onChange={this.handleChangeBlowout} /><br/>
-          Размер окна: <input type='text' onChange={this.handleChangeWindowSize} /><br/>
-          Количество нечетких переменных: <input type='text' onChange={this.handleChangeFuzzySize} />
+        Размер окна: <input type='text' onChange={this.handleChangeWindowSize} /><br/>
+        Количество нечетких переменных: <input type='text' onChange={this.handleChangeFuzzySize} /><br />
+        Набор данных(через запятую, без пробелов):<br /> <textarea onChange={(e) => this.prepareCustomCoords(e.target.value) } cols={100} rows={10}></textarea><br />
+        {this.state.coords &&
+            <div>
+              <button onClick={() => {this.calcFuzzyTimeseries(this.state.coords.map(e => e[1]).join(',')) && this.calcSlidingWindow(this.state.coords.map(e => e[1]).join(','))}}>Посчитать</button> <br />
+          </div>
+        }
         {this.state.deviation_equation &&
             <div>Функция: {this.state.deviation_equation}</div>}
 
@@ -49,7 +62,7 @@ class DeviationGraph extends React.Component {
           <div id="okno" className="tabcontent" style={{width: '100%', display: this.state.sliding_window_display ? 'block' : 'none'}}>
               {this.state.sliding_window &&
               <div>
-                  <Chart elementId='deviation_chart_div' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
+                  <Chart elementId='deviation_chart_div' rows={this.state.coords} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
                   <table className="table table-bordered table-hover">
                       <tbody>
                       <tr>
@@ -81,7 +94,7 @@ class DeviationGraph extends React.Component {
           <div id="fuzzy" className="tabcontent" style={{width: '100%', display: this.state.fuzzy_display ? 'block' : 'none'}}>
               {this.state.fuzzy &&
                   <div>
-                      <Chart elementId='deviation_chart_div_fuzzy' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
+                      <Chart elementId='deviation_chart_div_fuzzy' rows={this.state.coords} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
                       Поиск аномалий по символам ЛНВР:
                       <table className="table-bordered table-hover">
                           <tbody>

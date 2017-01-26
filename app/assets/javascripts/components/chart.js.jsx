@@ -10,10 +10,11 @@ class Chart extends React.Component {
   componentWillReceiveProps(nextProps) {
     console.log(this.props);
     console.log(nextProps);
-    if (nextProps.rows == [] || nextProps.rows[0] == undefined || nextProps === this.props )
+    if (nextProps.rows == [] || nextProps.rows == undefined || nextProps === this.props )
       return
     var options = {};
-    coords = nextProps.rows[0].map(function(array) {
+    console.log(nextProps.rows);
+    coords = nextProps.rows.map(function(array) {
       return [array[0], parseFloat(array[1])];
     });
     //data.addRows(coords);
