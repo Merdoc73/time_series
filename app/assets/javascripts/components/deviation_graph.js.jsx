@@ -43,10 +43,10 @@ class DeviationGraph extends React.Component {
 
 
           <ul className="tab">
-              <li><a href="javascript:void(0)" id="defaultOpen" className="tablinks" onClick={(e) => this.openTab(event, 'okno')}>Метод скользящего окна</a></li>
-              <li><a href="javascript:void(0)" className="tablinks" onClick={(e) => this.openTab(event, 'fuzzy')}>Анализ лингвистического ВР</a></li>
+              <li><a href="javascript:void(0)" id="defaultOpen" className={this.state.sliding_window_display ? "tablinks active" : "tablinks"} onClick={(e) => this.setState({sliding_window_display: true, fuzzy_display: false})}>Метод скользящего окна</a></li>
+              <li><a href="javascript:void(0)" className={this.state.fuzzy_display ? "tablinks active" : "tablinks"} onClick={(e) => this.setState({sliding_window_display: false, fuzzy_display: true})}>Анализ лингвистического ВР</a></li>
           </ul>
-          <div id="okno" className="tabcontent">
+          <div id="okno" className="tabcontent" style={{width: '100%', display: this.state.sliding_window_display ? 'block' : 'none'}}>
               {this.state.sliding_window &&
               <div>
                   <Chart elementId='deviation_chart_div' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
@@ -78,7 +78,7 @@ class DeviationGraph extends React.Component {
               }
           </div>
 
-          <div id="fuzzy" className="tabcontent">
+          <div id="fuzzy" className="tabcontent" style={{width: '100%', display: this.state.fuzzy_display ? 'block' : 'none'}}>
               {this.state.fuzzy &&
                   <div>
                       <Chart elementId='deviation_chart_div_fuzzy' rows={[this.state.coords]} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
@@ -137,23 +137,6 @@ class DeviationGraph extends React.Component {
           </div>
       </div>
     );
-  };
-  openTab(evt, tabName) {
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    contentElement = document.getElementById(tabName);
-    if (contentElement) {
-        contentElement.style.display = "block";
-        evt.currentTarget.className += " active";
-    }
   };
   getGraph(state, e) {
     self = this;

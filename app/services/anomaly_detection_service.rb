@@ -211,7 +211,7 @@ module AnomalyDetectionService
         all.include?(index)
        ]#.zip(trends, avgs, deviations, avgs_diff, dispersions)
     end
-    return { anomalies: all.map{|e| "#{e}-#{e+period}"}.join(';'),
+    return { anomalies: all.each_cons(2).select{|e| e[0] + 1 == e[1]}.flatten.uniq.map{|e| "#{e}-#{e + period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_json,
              var_table: var_table}
   end
