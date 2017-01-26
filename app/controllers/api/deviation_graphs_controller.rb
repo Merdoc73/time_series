@@ -4,7 +4,7 @@ class Api::DeviationGraphsController < Api::ApplicationController
 
     deviation_equation = params[:deviation_equation]
     if deviation_equation.nil? or deviation_equation.empty?
-      deviation_equation = equation
+      deviation_equation = "(#{Random.new.rand(-10..10)}*#{['sin(x)', 'cos(x)', 'tan(x)', 'atan(x)', 'log(x)', "#{Random.new.rand(-10..10)}*x"].sample})"
     end
 
     points_count = params[:points_count].to_i
