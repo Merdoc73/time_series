@@ -201,6 +201,7 @@ module AnomalyDetectionService
     if all.size >= 0.4 * (row.size - period)
       all = []
     end
+    all = all.each_cons(2).select{ |e| e[0] + 1 == e[1] }.flatten.uniq
     var_table = (0..row.size-period).to_a.map.with_index do |e, index|
        ["#{e}-#{e+period}",
         trends[index],
@@ -211,7 +212,7 @@ module AnomalyDetectionService
         all.include?(index)
        ]#.zip(trends, avgs, deviations, avgs_diff, dispersions)
     end
-    return { anomalies: all.each_cons(2).select{|e| e[0] + 1 == e[1]}.flatten.uniq.map{|e| "#{e}-#{e + period}"}.join(';'),
+    return { anomalies: all.map{|e| "#{e}-#{e + period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_json,
              var_table: var_table}
   end
