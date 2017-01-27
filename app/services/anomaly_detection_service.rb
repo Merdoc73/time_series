@@ -216,7 +216,8 @@ module AnomalyDetectionService
     return { anomalies: all.map{|e| "#{e}-#{e + period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_json,
              var_table: var_table,
-             description: get_window_description(var_table)}
+             description: get_window_description(var_table),
+             period: period}
   end
 
   def calc_trend(diff, element)
@@ -336,7 +337,8 @@ module AnomalyDetectionService
     {anomalies_indexes: anomalies_indexes,
      trend_table: trend_table,
      var_table: var_table,
-     description: get_fuzzy_description(anomalies_indexes)}
+     description: get_fuzzy_description(anomalies_indexes),
+     cunt: intervals_count}
   end
 
   def getFuzzyVars(intervals_count, min, max)
