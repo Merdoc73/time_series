@@ -29,6 +29,7 @@ gem 'uglifier'
 gem 'bootstrap-sass'
 gem 'sass-rails'
 gem 'lodash-rails'
+gem 'filesaverjs-rails'
 
 
 group :development, :test do
