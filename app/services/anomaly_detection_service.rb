@@ -118,11 +118,11 @@ module AnomalyDetectionService
         row_clone.delete_at(row_clone.index(row_clone.min))
       end
     elsif proportions > 1.1
-      row_clone = row.clone
+      row_clone = row
       target_size = (row.size * 0.7).to_i
 
       while target_size < row_clone.size
-        row_clone.delete_at(row_clone.index(row_clone.min))
+        row_clone.delete_at(row_clone.index(row_clone.max))
       end
     else
       row_clone = row
