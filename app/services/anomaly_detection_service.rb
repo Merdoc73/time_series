@@ -212,9 +212,11 @@ module AnomalyDetectionService
         all.include?(index)
        ]#.zip(trends, avgs, deviations, avgs_diff, dispersions)
     end
+
     return { anomalies: all.map{|e| "#{e}-#{e + period}"}.join(';'),
              all: anomaly.select{ |k,v| v.keys.size < row.size - period }.to_json,
-             var_table: var_table}
+             var_table: var_table,
+             description: get_window_description(var_table)}
   end
 
   def calc_trend(diff, element)
@@ -225,6 +227,21 @@ module AnomalyDetectionService
     else
       :fall
     end
+  end
+
+  def get_window_description(var_table)
+    anomalies = var_table.select {|e| e[6]}
+    if anomalies.empty?
+      return 'Во временном ряду аномалия не обнаружена.'
+    end
+    if anomalies.size == 1
+      return 'Во временном ряду была обнаружена аномалия на отрезке [' + r[0] + '].'
+    end
+    result = 'Во временном ряду были обнаружены аномалии на отрезках'
+    anomalies.each do |r|
+      result = result + ' [' + r[0] + '], '
+    end
+    result[0..-3] + '.'
   end
 
   def fuzzy(row, size)
@@ -318,7 +335,8 @@ module AnomalyDetectionService
 
     {anomalies_indexes: anomalies_indexes,
      trend_table: trend_table,
-     var_table: var_table}
+     var_table: var_table,
+     description: get_fuzzy_description(anomalies_indexes)}
   end
 
   def getFuzzyVars(intervals_count, min, max)
@@ -363,6 +381,20 @@ module AnomalyDetectionService
     linguistic_vars[linguistic_vars.size - 1].index = linguistic_vars.size - 1
 
     linguistic_vars
+  end
+
+  def get_fuzzy_description(anomalies_indexes)
+    if anomalies_indexes.empty?
+      return 'Во временном ряду аномалия не обнаружена.'
+    end
+    if anomalies_indexes.size == 1
+      return 'Во временном ряду была обнаружена аномалия в точке ' + anomalies_indexes[0] + '.'
+    end
+    result = 'Во временном ряду были обнаружены аномалии в точках'
+    anomalies_indexes.each do |r|
+      result = result + ' ' + r.to_s + ', '
+    end
+    result[0..-3] + '.'
   end
 
   class FuzzyVar

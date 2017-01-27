@@ -63,6 +63,7 @@ class DeviationGraph extends React.Component {
               {this.state.sliding_window &&
               <div>
                   <Chart elementId='deviation_chart_div' rows={this.state.coords} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
+                  <div>{this.state.sliding_window.description}</div>
                   <table className="table table-bordered table-hover">
                       <tbody>
                       <tr>
@@ -95,6 +96,7 @@ class DeviationGraph extends React.Component {
               {this.state.fuzzy &&
                   <div>
                       <Chart elementId='deviation_chart_div_fuzzy' rows={this.state.coords} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
+                      <div>{this.state.fuzzy.description}</div>
                       Поиск аномалий по символам ЛНВР:
                       <table className="table-bordered table-hover">
                           <tbody>
