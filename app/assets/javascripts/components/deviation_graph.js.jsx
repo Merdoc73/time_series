@@ -51,6 +51,12 @@ class DeviationGraph extends React.Component {
               <button onClick={() => {this.calcFuzzyTimeseries(this.state.coords.map(e => e[1]).join(',')) && this.calcSlidingWindow(this.state.coords.map(e => e[1]).join(','))}}>Посчитать</button> <br />
           </div>
         }
+          {
+              this.state.deviation_equation &&
+                  <div>
+                    <button onClick={() => { this.saveFile() }}>Выгрузить ВР</button><br/>
+                  </div>
+          }
         {this.state.deviation_equation &&
             <div>Функция: {this.state.deviation_equation}</div>}
 
@@ -63,6 +69,7 @@ class DeviationGraph extends React.Component {
               {this.state.sliding_window &&
               <div>
                   <Chart elementId='deviation_chart_div' rows={this.state.coords} isAnomaly={true} anomalies={this.state.sliding_window && this.state.sliding_window.anomalies}/>
+                  <div>{this.state.sliding_window.description}</div>
                   <table className="table table-bordered table-hover">
                       <tbody>
                       <tr>
@@ -95,6 +102,7 @@ class DeviationGraph extends React.Component {
               {this.state.fuzzy &&
                   <div>
                       <Chart elementId='deviation_chart_div_fuzzy' rows={this.state.coords} isAnomaly={true} anomalies={this.state.fuzzy && this.state.fuzzy.anomalies_indexes.map(function(e) { return (e - 1).toString() + "-" + (e + 1).toString()}).join(';')}/>
+                      <div>{this.state.fuzzy.description}</div>
                       Поиск аномалий по символам ЛНВР:
                       <table className="table-bordered table-hover">
                           <tbody>
@@ -199,5 +207,46 @@ class DeviationGraph extends React.Component {
 
     handleChangeFuzzySize(e) {
         this.setState({fuzzySize: e.target.value});
+    }
+
+    saveFile() {
+        this.createData();
+        blob = new Blob([this.createData()], {type: "text/plain;charset=utf-8"});
+
+        saveAs(blob, "timeseries_data.txt");
+    }
+
+    createData() {
+        result = '';
+        if (this.state.equation) {
+            result += 'Функция ВР: ' + this.state.equation + '\n';
+        }
+        if (this.state.manual_equation) {
+            result += 'Функция аномалии: ' + this.state.manual_equation + '\n';
+        }
+        if (this.state.manual_equation_length) {
+            result += 'Длина функции аномалии: ' + this.state.manual_equation_length + '\n';
+        }
+        if (this.state.noise) {
+            result += 'Шум: ' + this.state.noise + '\n';
+        }
+        if (this.state.blowout) {
+            result += 'Количество выбросов: ' + this.state.blowout + '\n';
+        }
+        if (this.state.coords) {
+            coordsInfo = '';
+            this.state.coords.forEach((arr) => {
+               coordsInfo += '[' + arr[0] + ';' + arr[1] + '], ';
+            });
+
+            result += 'Точки ВР: ' + coordsInfo.substr(0, coordsInfo.length - 2) + '\n';
+        }
+        if (this.state.sliding_window.period) {
+            result += 'Размер окна: ' + this.state.sliding_window.period + '\n';
+        }
+        if (this.state.fuzzy.cunt) {
+            result += 'Количество нечетких переменных: ' + this.state.fuzzy.cunt + '\n';
+        }
+        return result;
     }
 }

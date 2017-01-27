@@ -5,3 +5,4 @@
 //= require highcharts
 //= require components
 //= require bootstrap-sprockets
+//= require FileSaver
