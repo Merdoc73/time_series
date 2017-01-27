@@ -25,8 +25,6 @@ module AnomalyDetectionService
     row_size = row.size
     avg = getRowAverage(row)
     indexed_row = row.map.with_index { |e, i| [i, e] }
-    p avg
-    p row
     more_than_avg = indexed_row.select { |e| (e[1] || 0).to_f > avg }
     if more_than_avg.size > row_size.to_f * 0.7
       pereodic_row = false
@@ -172,43 +170,37 @@ module AnomalyDetectionService
       dispersions.merge!({ first_index => dispersion })
     end
     min_trend = trends.group_by{|k,v| v}.map {|k,v| [k, v.size]}.min_by{|e| e[1]}
-    trend_percent = 0.3
+    trend_percent = 0.15
     # p min_trend
     # p trends
     # p avgs
     # p deviations
     # p avgs_diff
-    p dispersions
     anomaly = {}
-    [:avgs, :deviations, :avgs_diff, :dispersions].each do |type|
+    [:avgs, :deviations].each do |type|
       avg = getRowAverage(eval(type.to_s).map{|k,v| v.to_f.round(3)}).round(4)
-      p "#{type.to_s} avg = #{avg}"
-      p "#{eval(type.to_s)}"
-      anomaly[type] = eval(type.to_s).select{ |k,v| !v.round(3).between?(avg - avg * 0.25, avg + avg * 0.25)}
+      p avg
+      anomaly[type] = eval(type.to_s).select{ |k,v| !v.round(3).between?(avg - avg * 0.5, avg + avg * 0.5)}
     end
     if min_trend.to_a.last <= trends.size * trend_percent
-      p "trend: #{min_trend} is lower 10%"
       anomaly[:trends] = trends.select{|e| e[0] != :trend}.select{|k,v| v == min_trend.to_a.first}
-      p anomaly[:trends]
     end
     if min_trend.to_a.last <= trends.size * trend_percent
-      p "trend: #{min_trend} is lower 10%"
       anomaly[:trends] = trends.select{|k,v| v == min_trend.to_a.first}
-      p anomaly[:trends]
     end
-    all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(&:&)
-    p all
-    if all.size >= 0.4 * (row.size - period)
+    all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(:|).sort
+
+    if all.size >= 0.4 * (row.size)
       all = []
     end
     all = all.each_cons(2).select{ |e| e[0] + 1 == e[1] }.flatten.uniq
     var_table = (0..row.size-period).to_a.map.with_index do |e, index|
        ["#{e}-#{e+period}",
         trends[index],
-        avgs[index],
-        deviations[index],
-        avgs_diff[index],
-        dispersions[index],
+        avgs[index].round(2),
+        deviations[index].round(2),
+        avgs_diff[index].round(2),
+        dispersions[index].round(2),
         all.include?(index)
        ]#.zip(trends, avgs, deviations, avgs_diff, dispersions)
     end
