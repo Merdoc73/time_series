@@ -180,7 +180,7 @@ module AnomalyDetectionService
     [:avgs, :deviations].each do |type|
       avg = getRowAverage(eval(type.to_s).map{|k,v| v.to_f.round(3)}).round(4)
       p avg
-      anomaly[type] = eval(type.to_s).select{ |k,v| !v.round(3).between?(avg - avg * 0.5, avg + avg * 0.5)}
+      anomaly[type] = eval(type.to_s).select{ |k,v| !v.round(3).between?(avg - avg * 1, avg + avg * 1)}
     end
     if min_trend.to_a.last <= trends.size * trend_percent
       anomaly[:trends] = trends.select{|e| e[0] != :trend}.select{|k,v| v == min_trend.to_a.first}
@@ -189,6 +189,7 @@ module AnomalyDetectionService
       anomaly[:trends] = trends.select{|k,v| v == min_trend.to_a.first}
     end
     all = anomaly.map{|e| e[1].keys}.select(&:present?).reduce(:|).sort
+    #binding.pry
 
     if all.size >= 0.4 * (row.size)
       all = []
