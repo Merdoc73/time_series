@@ -20,15 +20,18 @@ class Api::DeviationGraphsController < Api::ApplicationController
 
     calculator = Dentaku::Calculator.new
     start_point = Random.new.rand(1..(points_count - deviation_length))
+    lol = 0
     coords = points_count.times.map do |x|
       x_val = x * 0.3
       coord = calculator.evaluate(equation, x: x_val)
       if (start_point..start_point+deviation_length-1).to_a.include? x
-        coord = calculator.evaluate(deviation_equation, x: (x - start_point) * 0.3)
+        coord = calculator.evaluate(deviation_equation, x: (x - start_point) * 0.3) + lol
       end
       actual_noise = Random.new.rand(-noise..noise)
       coord = coord * (1 + actual_noise)
-
+      if x == start_point - 1
+        lol = coord.round(5)
+      end
       [x, coord.round(5)]
     end
 
