@@ -225,15 +225,23 @@ module AnomalyDetectionService
 
   def get_window_description(var_table)
     anomalies = var_table.select {|e| e[6]}
+    anomalies = anomalies.map{ |e| e[0] }.each_with_object([]) do |e, obj|
+      e = e.split('-')
+      if obj.last.try('[]', 1).try('between?', e[0].to_i, e[1].to_i)
+        obj[-1] = [obj.last[0].to_i, e[1].to_i]
+      else
+        obj << [e[0].to_i, e[1].to_i]
+      end
+    end
     if anomalies.empty?
       return 'Во временном ряду аномалия не обнаружена.'
     end
     if anomalies.size == 1
-      return 'Во временном ряду была обнаружена аномалия на отрезке [' + r[0] + '].'
+      return 'Во временном ряду была обнаружена аномалия на отрезке [' + anomalies[0].join('-') + '].'
     end
     result = 'Во временном ряду были обнаружены аномалии на отрезках'
     anomalies.each do |r|
-      result = result + ' [' + r[0] + '], '
+      result = result + ' [' + r.join('-') + '], '
     end
     result[0..-3] + '.'
   end
