@@ -21,7 +21,7 @@ Swagger::Docs::Config.register_apis({
   }
 })
 GrapeSwaggerRails.options.url      = 'api-docs.json'
-GrapeSwaggerRails.options.app_url  = 'http://127.0.0.1:3000/'
+GrapeSwaggerRails.options.app_url  = 'https://time-series-1.herokuapp.com/'
 module Swagger
   module Docs
     class Config
