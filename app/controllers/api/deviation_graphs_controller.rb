@@ -1,4 +1,17 @@
 class Api::DeviationGraphsController < Api::ApplicationController
+
+  swagger_controller :DeviationGraphs, "Deviation Graphs"
+
+  swagger_api :create do
+    summary "Создание ряда с аномалией"
+    param :form, :equation, :string, :required, "выражение основного ряда (2*x, sin(x) и т.д.)"
+    param :form, :deviation_equation, :string, "выражение для аномалии (2*x, sin(x) и т.д.)"
+    param :form, :points_count, :integer, :required, "Общее количество точек"
+    param :form, :noise, :integer, "Шум, в процентах"
+    param :form, :blowout, :integer, "Количество выбросов"
+    param :form, :deviation_length, :integer, :required, "Длина функции аномалии"
+  end
+
   def create
     equation = params[:equation]
 

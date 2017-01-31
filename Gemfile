@@ -30,6 +30,8 @@ gem 'bootstrap-sass'
 gem 'sass-rails'
 gem 'lodash-rails'
 gem 'filesaverjs-rails'
+gem 'swagger-docs'
+gem 'grape-swagger-rails'
 
 
 group :development, :test do
