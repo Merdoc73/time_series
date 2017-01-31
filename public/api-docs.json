@@ -1,0 +1,28 @@
+{
+  "apiVersion": "1.0",
+  "swaggerVersion": "1.2",
+  "basePath": "https://time-series-1.herokuapp.com",
+  "apis": [
+    {
+      "path": "/api/base_graphs.{format}",
+      "description": "Base Graph"
+    },
+    {
+      "path": "/api/deviation_graphs.{format}",
+      "description": "Deviation Graphs"
+    },
+    {
+      "path": "/api/anomaly_detectors.{format}",
+      "description": "Anomaly Detectors"
+    }
+  ],
+  "authorizations": null,
+  "info": {
+    "title": "Time Series App",
+    "description": "This is a sample description.",
+    "termsOfServiceUrl": "http://helloreverb.com/terms/",
+    "contact": "apiteam@wordnik.com",
+    "license": "Apache 2.0",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html"
+  }
+}

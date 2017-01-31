@@ -1,0 +1,63 @@
+{
+  "apiVersion": "1.0",
+  "swaggerVersion": "1.2",
+  "basePath": "https://time-series-1.herokuapp.com",
+  "resourcePath": "deviation_graphs",
+  "apis": [
+    {
+      "path": "/api/deviation_graph",
+      "operations": [
+        {
+          "summary": "Создание ряда с аномалией",
+          "parameters": [
+            {
+              "paramType": "form",
+              "name": "equation",
+              "type": "string",
+              "description": "выражение основного ряда (2*x, sin(x) и т.д.)",
+              "required": true
+            },
+            {
+              "paramType": "form",
+              "name": "deviation_equation",
+              "type": "string",
+              "description": "выражение для аномалии (2*x, sin(x) и т.д.)",
+              "required": false
+            },
+            {
+              "paramType": "form",
+              "name": "points_count",
+              "type": "integer",
+              "description": "Общее количество точек",
+              "required": true
+            },
+            {
+              "paramType": "form",
+              "name": "noise",
+              "type": "integer",
+              "description": "Шум, в процентах",
+              "required": false
+            },
+            {
+              "paramType": "form",
+              "name": "blowout",
+              "type": "integer",
+              "description": "Количество выбросов",
+              "required": false
+            },
+            {
+              "paramType": "form",
+              "name": "deviation_length",
+              "type": "integer",
+              "description": "Длина функции аномалии",
+              "required": true
+            }
+          ],
+          "nickname": "Api::DeviationGraphs#create",
+          "method": "post"
+        }
+      ]
+    }
+  ],
+  "authorizations": null
+}

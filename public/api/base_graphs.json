@@ -1,0 +1,35 @@
+{
+  "apiVersion": "1.0",
+  "swaggerVersion": "1.2",
+  "basePath": "https://time-series-1.herokuapp.com",
+  "resourcePath": "base_graphs",
+  "apis": [
+    {
+      "path": "/api/base_graph",
+      "operations": [
+        {
+          "summary": "Создание обычного ряда на основе функции",
+          "parameters": [
+            {
+              "paramType": "form",
+              "name": "equation",
+              "type": "string",
+              "description": "выражение (2*x, sin(x) и т.д.)",
+              "required": true
+            },
+            {
+              "paramType": "form",
+              "name": "points_count",
+              "type": "integer",
+              "description": "Количество точек",
+              "required": true
+            }
+          ],
+          "nickname": "Api::BaseGraphs#create",
+          "method": "post"
+        }
+      ]
+    }
+  ],
+  "authorizations": null
+}
