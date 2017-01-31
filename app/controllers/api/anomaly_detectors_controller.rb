@@ -6,7 +6,7 @@ class Api::AnomalyDetectorsController < Api::ApplicationController
     summary "Получает результат поиска аномалий"
     param_list :form, :type, :string, :required, "type (fuzzy или sliding_window)", ['fuzzy', 'sliding_window']
     param :form, :row, :string, :required, "Values ( 1,2,3,4,5,6 )"
-    param :form, :size, :integer, "Длина окна (для метода скользящего окна)"
+    param :form, :size, :integer, :optional, "Длина окна (для метода скользящего окна)"
   end
 
   def create
